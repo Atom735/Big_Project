@@ -32,9 +32,6 @@
 *.su
 
 # VS2010 files
+*/*/Debug/*
 *.sdf
 *.opensdf
-*.tlog
-*.manifest
-*.satbuldstate
-*.unsuccessfulbuild
