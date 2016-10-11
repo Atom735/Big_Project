@@ -3,7 +3,7 @@
 
 #include <SDL.h>
 
-int main(int argc, char const *argv[])
+int wmain(int argc, char const *argv[])
 {
 	return 0;
 }
