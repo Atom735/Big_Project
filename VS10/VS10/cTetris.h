@@ -33,6 +33,7 @@ private:
 	int CanStepMove(int x);
 	int CanStepUp(cBlockFigure *pf);
 	void FigureNext();
+	void OnLose();
 public:
 	int SetTickStep(int tick=0);
 	void StartNew(SDL_Renderer *r, int Width=0, int Height=0);

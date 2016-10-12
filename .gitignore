@@ -32,5 +32,6 @@
 
 # VS2010 files
 */*/Debug/*
+*/*/Release/*
 *.sdf
 *.opensdf

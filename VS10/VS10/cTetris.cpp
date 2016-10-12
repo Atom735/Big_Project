@@ -18,6 +18,20 @@ char *GetFirstNumber(char *str)
 	}
 	return 0;
 }
+char *GetFirstHexNumber(char *str)
+{
+	while(*str)
+	{
+		if((*str>='0' && *str<='9') || (*str>='a' && *str<='f') || (*str>='A' && *str<='F')) return str;
+		if(*str=='#')
+		{
+			for(;*str!='\n';str++)
+				if(!(*str)) return 0;
+		}
+		str++;
+	}
+	return 0;
+}
 int GetNumber(char **s)
 {
 	char *str=*s;
@@ -35,6 +49,29 @@ int GetNumber(char **s)
 	if(minus) return -n;
 	return n;
 }
+
+int GetHexNumber(char **s)
+{
+	char *str=*s;
+	if(!(str = GetFirstHexNumber(str))) return 0;
+	int n=0;
+	while((*str>='0' && *str<='9') || (*str>='a' && *str<='f') || (*str>='A' && *str<='F'))
+	{
+		n<<=4;
+		if(*str>='0' && *str<='9')
+			n+=*str-'0';
+		else
+		if(*str>='a' && *str<='f')
+			n+=*str-'a'+10;
+		else
+		if(*str>='A' && *str<='F')
+			n+=*str-'A'+10;
+		str++;
+	}
+	*s=str;
+	return n;
+}
+
 
 struct cGameTetris::cBlockFigure
 {
@@ -89,9 +126,10 @@ public:
 			pF[i].dx = GetNumber(&sn);
 			pF[i].dy = GetNumber(&sn);
 
-			pF[i].r = GetNumber(&sn);
-			pF[i].g = GetNumber(&sn);
-			pF[i].b = GetNumber(&sn);
+			int c=GetHexNumber(&sn);
+			pF[i].r = (c>>16)&0xff;
+			pF[i].g = (c>>4)&0xff;
+			pF[i].b = c&0xff;
 
 			pF[i].bsize = GetNumber(&sn);
 			if(pF[i].bsize)
@@ -176,8 +214,9 @@ void cGameTetris::FigureNext()
 	{
 		int x=(X-pf->dx+pf->bx[i]);
 		int y=(Y-pf->dy+pf->by[i]);
-		Map[y*w+x]=pf->IdS;
-		if(y<=1) state = -1;
+		if(x>=0 && x<w && y>=0 && y<h)
+			Map[y*w+x]=pf->IdS;
+		if(y<=1) OnLose();
 	}
 
 	{
@@ -266,6 +305,8 @@ void cGameTetris::Draw(SDL_Renderer *r)
 	if(!blockTexture) return;
 	SDL_Rect rc={0,0,blockSize,blockSize};	
 	SDL_SetTextureColorMod(blockTexture,0xff,0xff,0xff);
+	if(cBlockFigure *pf=FA->GetFigure(0))
+		SDL_SetTextureColorMod(blockTexture,pf->r,pf->g,pf->b);
 	for(int i=0;i<w+2;i++)
 	{
 		rc.x=i*blockSize;
@@ -419,4 +460,13 @@ void cGameTetris::PauseSwitch()
 	if(state==0) state = 1;
 	else
 	if(state==1) state = 0;
+}
+void cGameTetris::OnLose()
+{
+	FILE * pFile;
+	pFile = fopen ("score.txt" , "w");
+	if (pFile == NULL) {perror ("Error opening file");abort();}
+	fprintf(pFile, "You score: [%i pts]\nKilling lines: [%i]\n", points, pointsLine);
+	fclose (pFile);
+	state = -1;
 }
