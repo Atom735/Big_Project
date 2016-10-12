@@ -1,0 +1,245 @@
+# LZTIO
+# OITZL
+# Это комментарий в одну строку
+# Количество фигур
+# 7 OITZSLJ
+# 1 O1 Indigo
+# 2 I2 Blue
+# 4 T3 Red
+# 2 Z4 Lime
+# 2 S5 Amber
+# 4 L6 Green
+# 4 J7 Teal
+
+# 19+7+1
+
+27
+
+# ID фигуры
+# ID поворота влево/вправо и ID мертвой фигуры(нужно только для цвет)
+# смещение центра
+# Цвет Hex (ffffff) - (000000)
+# https://material.google.com/style/color.html#color-color-palette
+# Количество блоков
+# Координаты блоков (начиная сверхнего левого угла)
+
+# All Blue Grey 200
+0 0 0 0 0 0
+B0BEC5 0
+
+# O-Tetramino DeathColor Indigo
+1 0 0 0 0 0
+3F51B5 0
+
+# I-Tetramino DeathColor Blue
+2 0 0 0 0 0
+2196F3 0
+
+# T-Tetramino DeathColor Red
+3 0 0 0 0 0
+F44336 0
+
+# Z-Tetramino DeathColor Lime
+4 0 0 0 0 0
+CDDC39 0
+
+# S-Tetramino DeathColor Amber
+5 0 0 0 0 0
+FFC107 0
+
+# L-Tetramino DeathColor Green
+6 0 0 0 0 0
+4CAF50 0
+
+# J-Tetramino DeathColor Teal
+7 0 0 0 0 0
+009688 0
+
+
+
+
+
+# O-Tetramino
+110
+110 110 1
+1 1
+3D5AFE
+4
+0 0 1 0
+0 1 1 1
+
+
+# I-TetraminoVertical
+120
+121 121 2
+0 2
+2979FF
+4
+0 0
+0 1
+0 2
+0 3
+
+# I-TetraminoHorizontal
+121
+120 120 2
+2 0
+2979FF
+4
+0 0 1 0 2 0 3 0
+
+# T-Tetramino0
+130
+133 131 3
+1 1
+FF1744
+4
+    1 0
+0 1 1 1 2 1
+
+# T-Tetramino1
+131
+130 132 3
+0 1
+FF1744
+4
+0 0
+0 1 1 1
+0 2
+
+# T-Tetramino2
+132
+131 133 3
+1 0
+FF1744
+4
+0 0 1 0 2 0
+    1 1
+
+# T-Tetramino3
+133
+132 130 3
+1 1
+FF1744
+4
+    1 0
+0 1 1 1
+    1 2
+
+
+# Z-Tetramino0
+140 
+141 141 4 
+1 0
+C6FF00
+4
+0 0 1 0
+    1 1 2 1
+
+# Z-Tetramino1
+141 
+140 140 4 
+1 1
+C6FF00
+4
+    1 0
+0 1 1 1
+0 2    
+
+# S-Tetramino0
+150 
+151 151 5 
+1 0
+FFC400
+4
+    1 0 2 0
+0 1 1 1
+
+
+# S-Tetramino1
+151 
+150 150 5 
+1 1
+FFC400
+4
+0 0 
+0 1 1 1
+    1 2
+
+# L-Tetramino0
+160
+163 161 6
+0 2
+00E676
+4
+0 0 
+0 1 
+0 2 1 2 
+
+# L-Tetramino1
+161
+160 162 6
+0 0
+00E676
+4
+0 0 1 0 2 0
+0 1
+
+# L-Tetramino2
+162
+161 163 6
+1 0
+00E676
+4
+0 0 1 0 
+    1 1 
+    1 2 
+
+# L-Tetramino3
+163
+162 160 6
+2 1
+00E676
+4
+        2 0
+0 1 1 1 2 1
+
+# J-Tetramino0
+170
+173 171 7
+1 2
+1DE9B6
+4
+    1 0
+    1 1
+0 2 1 2
+
+# J-Tetramino1
+171
+170 172 7
+0 1
+1DE9B6
+4
+0 0
+0 1 1 1 2 1
+
+# J-Tetramino2
+172
+171 173 7
+0 0
+1DE9B6
+4
+0 0 1 0
+0 1
+0 2
+
+# J-Tetramino3
+173
+172 170 7
+0 1
+1DE9B6
+4
+0 0 1 0 2 0
+        2 1
+
+
