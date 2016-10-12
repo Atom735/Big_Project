@@ -12,6 +12,9 @@ private:
 	struct cBlockFigure;
 	class cFigureAtlas;
 
+	int points;
+	int pointsLine;
+
 	int *Map;
 	int X, Y;
 	int w, h;
@@ -28,6 +31,7 @@ private:
 	void StepNext();
 	int CanStepNext();
 	int CanStepMove(int x);
+	int CanStepUp(cBlockFigure *pf);
 	void FigureNext();
 public:
 	int SetTickStep(int tick=0);

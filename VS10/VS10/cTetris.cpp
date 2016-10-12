@@ -94,12 +94,15 @@ public:
 			pF[i].b = GetNumber(&sn);
 
 			pF[i].bsize = GetNumber(&sn);
-			pF[i].bx = new int[pF[i].bsize];
-			pF[i].by = new int[pF[i].bsize];
-			for(int j=0; j<pF[i].bsize; j++)
+			if(pF[i].bsize)
 			{
-				pF[i].bx[j] = GetNumber(&sn);
-				pF[i].by[j] = GetNumber(&sn);
+				pF[i].bx = new int[pF[i].bsize];
+				pF[i].by = new int[pF[i].bsize];
+				for(int j=0; j<pF[i].bsize; j++)
+				{
+					pF[i].bx[j] = GetNumber(&sn);
+					pF[i].by[j] = GetNumber(&sn);
+				}
 			}
 		}
 	}
@@ -108,7 +111,13 @@ public:
 		if(Id<0)
 		{
 			srand(rand());
-			return pF+(rand()%N);
+			cBlockFigure *o=pF+(rand()%N);
+			while(!o->bsize)
+			{
+				srand(rand());
+				o=pF+(rand()%N);
+			}
+			return o;
 		}
 		if(!pF) return 0;
 		for(int i=0;i<N;i++)
@@ -128,6 +137,7 @@ public:
 
 int cGameTetris::CanStepNext()
 {
+	if(pf)
 	for(int i=0;i<pf->bsize;i++)
 	{
 		int x=(X-pf->dx+pf->bx[i]);
@@ -139,11 +149,23 @@ int cGameTetris::CanStepNext()
 
 int cGameTetris::CanStepMove(int ix)
 {
+	if(pf)
 	for(int i=0;i<pf->bsize;i++)
 	{
 		int x=(X-pf->dx+ix+pf->bx[i]);
 		int y=(Y-pf->dy+pf->by[i]);
-		if(y>=h || Map[y*w+x]) return 0;
+		if(x<0 || x>=w || Map[y*w+x]) return 0;
+	}
+	return 1;
+}
+int cGameTetris::CanStepUp(cBlockFigure *pf)
+{
+	if((!pf) || (!FA)) return 1;
+	for(int i=0;i<pf->bsize;i++)
+	{
+		int x=(X-pf->dx+pf->bx[i]);
+		int y=(Y-pf->dy+pf->by[i]);
+		if(x<0 || x>=w || Map[y*w+x]) return 0;
 	}
 	return 1;
 }
@@ -157,6 +179,29 @@ void cGameTetris::FigureNext()
 		Map[y*w+x]=pf->IdS;
 		if(y<=1) state = -1;
 	}
+
+	{
+		int line=0;
+		int pl=100;
+		for(int y=0;y<h;y++)
+		{
+			int xln=0;
+			for(int x=0;x<w;x++)
+				if(Map[y*w+x])
+					xln++;
+			if(xln==w)
+			{
+				pointsLine++;
+				points+=pl;
+				pl+=75;
+
+				for(int y2=y;y2>0;y2--)
+					for(int x=0;x<w;x++)
+						Map[y2*w+x]=Map[(y2-1)*w+x];
+			}
+		}
+	}
+
 	X=w/2;Y=0;
 	pf = pf2;
 	pf2 = FA->GetFigure(-1);
@@ -169,8 +214,12 @@ void cGameTetris::StepMove(int x, int y)
 	{
 		if(y==-1)
 		{
+			cBlockFigure *pfu=FA->GetFigure(pf->IdR);
+			if(CanStepUp(pfu)) pf=pfu;
 			return;
 		}
+		cBlockFigure *pfu=FA->GetFigure(pf->IdL);
+		if(CanStepUp(pfu)) pf=pfu;
 		return;
 	}
 	if(y>0)
@@ -193,7 +242,7 @@ void cGameTetris::StepNext()
 	tickPrevStep+=tickPerStep;
 	if(CanStepNext())
 	{Y++;return;}
-
+	
 	FigureNext();
 }
 
@@ -225,7 +274,7 @@ void cGameTetris::Draw(SDL_Renderer *r)
 		rc.x=i*blockSize;
 		rc.y=(h+1)*blockSize;
 		SDL_RenderCopy(r, blockTexture, 0, &rc);
-	}	
+	}
 	for(int i=0;i<h;i++)
 	{
 		rc.x=0;
@@ -337,6 +386,8 @@ void cGameTetris::StartNew(SDL_Renderer *r, int Width, int Height)
 	X=w/2;Y=0;
 	pf = FA->GetFigure(-1);
 	pf2 = FA->GetFigure(-1);
+	points=0;
+	pointsLine=0;
 	tickPrevStep=tickStart=SDL_GetTicks();
 }
 void cGameTetris::Close()
@@ -352,7 +403,6 @@ cGameTetris::cGameTetris()
 	memset(this, 0, sizeof(cGameTetris));
 	Resize();
 	SetTickStep(333);
-	FA = new cFigureAtlas;
 }
 cGameTetris::~cGameTetris()
 {
