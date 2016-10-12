@@ -50,7 +50,11 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 					g_Tetris.StepMove(0,1);
 					break;
 				case SDL_SCANCODE_F2:
+					g_Tetris.Close();
 					g_Tetris.StartNew(g_Renderer);
+					break;
+				case SDL_SCANCODE_P:
+					g_Tetris.PauseSwitch();
 					break;
 				};
 			}

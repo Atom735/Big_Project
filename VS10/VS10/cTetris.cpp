@@ -297,7 +297,6 @@ void cGameTetris::Draw(SDL_Renderer *r)
 			rc.y=(y+1)*blockSize;
 			SDL_RenderCopy(r, blockTexture, 0, &rc);
 		}
-		return;
 	}
 	if(state == -1)
 	{
@@ -414,3 +413,10 @@ cGameTetris::~cGameTetris()
 
 int cGameTetris::SetTickStep(int tick)
 {if(tick > 10) tickPerStep = tick;return tickPerStep;}
+
+void cGameTetris::PauseSwitch()
+{
+	if(state==0) state = 1;
+	else
+	if(state==1) state = 0;
+}

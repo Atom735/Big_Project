@@ -40,6 +40,7 @@ public:
 	void Draw(SDL_Renderer *r);
 	void Resize(int W=0, int H=0);
 	void StepMove(int x=0, int y=0);
+	void PauseSwitch();
 	cGameTetris();
 	~cGameTetris();
 };
