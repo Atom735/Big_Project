@@ -5,7 +5,7 @@
 SDL_Window      *g_Window        = 0;
 SDL_Renderer    *g_Renderer      = 0;
 
-cGameTetris g_Tetris;
+//cGameTetris g_Tetris;
 
 
 INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
@@ -22,7 +22,7 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 		abort();
     }
 
-	g_Tetris.StartNew(g_Renderer);
+	//g_Tetris.StartNew(g_Renderer);
 
     SDL_Event e;
 	while (1) 
@@ -39,36 +39,37 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 				switch(e.key.keysym.scancode)
 				{
 				case SDL_SCANCODE_LEFT:
-					g_Tetris.StepMove(-1);
+					//g_Tetris.StepMove(-1);
 					break;
 				case SDL_SCANCODE_RIGHT:
-					g_Tetris.StepMove(1);
+					//g_Tetris.StepMove(1);
 					break;
 				case SDL_SCANCODE_UP:
-					g_Tetris.StepMove(0,-1);
+					//g_Tetris.StepMove(0,-1);
 					break;
 				case SDL_SCANCODE_DOWN:
-					g_Tetris.StepMove(0,1);
+					//g_Tetris.StepMove(0,1);
 					break;
 				case SDL_SCANCODE_F2:
-					g_Tetris.Close();
-					g_Tetris.StartNew(g_Renderer);
+					//g_Tetris.Close();
+					//g_Tetris.StartNew(g_Renderer);
 					break;
 				case SDL_SCANCODE_P:
-					g_Tetris.PauseSwitch();
+					//g_Tetris.PauseSwitch();
 					break;
 				};
 			}
 		}
 
-		g_Tetris.StepMove();
+		//g_Tetris.StepMove();
 		SDL_SetRenderDrawColor(g_Renderer, 0x00, 0x00, 0x00, 0x00);
 		SDL_RenderClear(g_Renderer);
-		g_Tetris.Draw(g_Renderer);
+		//g_Tetris.Draw(g_Renderer);
+		rTest(g_Renderer);
 		SDL_RenderPresent(g_Renderer);
     }
 	GOTO_LEAVE_LOOP:
-	g_Tetris.Close();
+	//g_Tetris.Close();
 
 	SDL_DestroyRenderer(g_Renderer);
 	SDL_DestroyWindow(g_Window);

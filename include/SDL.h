@@ -24,10 +24,6 @@
  *
  *  Main include header for the SDL library
  */
-
-#pragma comment(lib, "SDL2.lib")
-#pragma comment(lib, "SDL2main.lib")
-
 #ifndef _SDL_H
 #define _SDL_H
 

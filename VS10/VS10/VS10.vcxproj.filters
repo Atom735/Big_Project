@@ -21,9 +21,15 @@
     <ClCompile Include="cTetris.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
+    <ClCompile Include="cTest.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cTetris.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="cTest.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>

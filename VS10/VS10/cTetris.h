@@ -2,6 +2,8 @@
 #define H_C_TETRIS
 
 #include <SDL.h>
+#pragma comment(lib, "SDL2.lib")
+#pragma comment(lib, "SDL2main.lib")
 #include <cstdio>
 #include <cstdlib>
 
