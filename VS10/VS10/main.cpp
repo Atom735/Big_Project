@@ -1,4 +1,5 @@
 #include "cTetris.h"
+#include "cTest.h"
 #include <Windows.h>
 
 SDL_Window      *g_Window        = 0;
