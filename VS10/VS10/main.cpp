@@ -37,6 +37,8 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 			}
 			if(e.type == SDL_KEYDOWN)
 			{
+				
+				rTest(g_Renderer, e.key.keysym.scancode);
 				switch(e.key.keysym.scancode)
 				{
 				case SDL_SCANCODE_LEFT:

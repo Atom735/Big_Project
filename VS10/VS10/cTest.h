@@ -10,6 +10,6 @@
 
 void rTestInit(SDL_Renderer *r);
 void rTestRelease();
-void rTest(SDL_Renderer *r);
+void rTest(SDL_Renderer *r, SDL_Scancode sc=SDL_SCANCODE_UNKNOWN);
 
 #endif
