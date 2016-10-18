@@ -16,20 +16,21 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
 		abort();
 	}
-	if (SDL_CreateWindowAndRenderer(800, 600, SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE, &g_Window, &g_Renderer))
+	if (SDL_CreateWindowAndRenderer(1024, 768, SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE, &g_Window, &g_Renderer))
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError());
 		abort();
     }
 
 	//g_Tetris.StartNew(g_Renderer);
+	rTestInit(g_Renderer);
 
     SDL_Event e;
 	while (1) 
 	{
 		SDL_PumpEvents();
         while(SDL_PeepEvents(&e,1,SDL_GETEVENT,SDL_FIRSTEVENT,SDL_LASTEVENT))
-		{
+		{			
 			if (e.type == SDL_QUIT)
 			{
 				goto GOTO_LEAVE_LOOP;
@@ -59,8 +60,7 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 					break;
 				};
 			}
-		}
-
+		}		
 		//g_Tetris.StepMove();
 		SDL_SetRenderDrawColor(g_Renderer, 0x00, 0x00, 0x00, 0x00);
 		SDL_RenderClear(g_Renderer);
@@ -70,6 +70,7 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
     }
 	GOTO_LEAVE_LOOP:
 	//g_Tetris.Close();
+	rTestRelease();
 
 	SDL_DestroyRenderer(g_Renderer);
 	SDL_DestroyWindow(g_Window);

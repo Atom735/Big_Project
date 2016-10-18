@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="FreeType">
+      <UniqueIdentifier>{a84ce879-e058-4337-b4d1-57a25a73e3a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -24,6 +27,9 @@
     <ClCompile Include="cTest.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
+    <ClCompile Include="cFT.cpp">
+      <Filter>FreeType</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cTetris.h">
@@ -31,6 +37,9 @@
     </ClInclude>
     <ClInclude Include="cTest.h">
       <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="cFT.h">
+      <Filter>FreeType</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -82,11 +82,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cFT.cpp" />
     <ClCompile Include="cTest.cpp" />
     <ClCompile Include="cTetris.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cFT.h" />
     <ClInclude Include="cTest.h" />
     <ClInclude Include="cTetris.h" />
   </ItemGroup>
