@@ -1,12 +1,14 @@
-#include "cTetris.h"
-#include "cTest.h"
+#include "cGame.h"
 #include <Windows.h>
+
+#include "c2048.h"
+#include "cTetris.h"
 
 SDL_Window      *g_Window        = 0;
 SDL_Renderer    *g_Renderer      = 0;
 
 //cGameTetris g_Tetris;
-
+cGameBase       *g_Game = 0;
 
 INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 {
@@ -22,8 +24,10 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 		abort();
     }
 
+	g_Game = new cGame2048();
+	g_Game->Init(g_Renderer);
 	//g_Tetris.StartNew(g_Renderer);
-	rTestInit(g_Renderer);
+	//rTestInit(g_Renderer);
 
     SDL_Event e;
 	while (1) 
@@ -37,8 +41,8 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 			}
 			if(e.type == SDL_KEYDOWN)
 			{
-				
-				rTest(g_Renderer, e.key.keysym.scancode);
+				g_Game->Keyboard(e.key.keysym.scancode);
+				//rTest(g_Renderer, e.key.keysym.scancode);
 				switch(e.key.keysym.scancode)
 				{
 				case SDL_SCANCODE_LEFT:
@@ -62,17 +66,20 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 					break;
 				};
 			}
-		}		
+		}
 		//g_Tetris.StepMove();
 		SDL_SetRenderDrawColor(g_Renderer, 0x00, 0x00, 0x00, 0x00);
 		SDL_RenderClear(g_Renderer);
+		g_Game->Draw(g_Renderer);
 		//g_Tetris.Draw(g_Renderer);
-		rTest(g_Renderer);
+		//rTest(g_Renderer);
 		SDL_RenderPresent(g_Renderer);
     }
-	GOTO_LEAVE_LOOP:
+GOTO_LEAVE_LOOP:
+	g_Game->Release();
+	delete g_Game;
 	//g_Tetris.Close();
-	rTestRelease();
+	//rTestRelease();
 
 	SDL_DestroyRenderer(g_Renderer);
 	SDL_DestroyWindow(g_Window);

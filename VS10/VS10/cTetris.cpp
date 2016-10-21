@@ -301,6 +301,7 @@ void cGameTetris::Step()
 
 void cGameTetris::Draw(SDL_Renderer *r)
 {
+	Step();
 	if(!r) return;
 	if(!blockTexture) return;
 	SDL_Rect rc={0,0,blockSize,blockSize};	
@@ -396,7 +397,9 @@ void cGameTetris::Resize(int W, int H)
 }
 
 void cGameTetris::StartNew(SDL_Renderer *r, int Width, int Height)
-{
+{	
+	if(r) R=r;
+	r=R;
 	w=Width;h=Height;
 	if(w<=10) w=10;
 	if(h<=20) h=20;
@@ -440,12 +443,12 @@ void cGameTetris::Close()
 
 cGameTetris::cGameTetris()
 {
-	memset(this, 0, sizeof(cGameTetris));
 	Resize();
 	SetTickStep(333);
 }
 cGameTetris::~cGameTetris()
 {
+	Close();
 	pf=pf2=0;
 	if(FA) delete FA; FA=0;
 	if(Map) delete[] Map; Map=0;		
@@ -469,4 +472,39 @@ void cGameTetris::OnLose()
 	fprintf(pFile, "You score: [%i pts]\nKilling lines: [%i]\n", points, pointsLine);
 	fclose (pFile);
 	state = -1;
+}
+
+void cGameTetris::Init( SDL_Renderer *r )
+{
+	if(r) R=r;
+	StartNew(R);
+}
+void cGameTetris::Release()
+{
+	Close();
+}
+void cGameTetris::Keyboard( SDL_Scancode sc )
+{
+	switch(sc)
+	{
+	case SDL_SCANCODE_LEFT:
+		StepMove(-1);
+		break;
+	case SDL_SCANCODE_RIGHT:
+		StepMove(1);
+		break;
+	case SDL_SCANCODE_UP:
+		StepMove(0,-1);
+		break;
+	case SDL_SCANCODE_DOWN:
+		StepMove(0,1);
+		break;
+	case SDL_SCANCODE_F2:
+		Close();
+		StartNew();
+		break;
+	case SDL_SCANCODE_P:
+		PauseSwitch();
+		break;
+	};
 }

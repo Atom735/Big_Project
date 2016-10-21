@@ -1,16 +1,13 @@
 #ifndef H_C_TETRIS
 #define H_C_TETRIS
 
-#include <SDL.h>
-#pragma comment(lib, "SDL2.lib")
-#pragma comment(lib, "SDL2main.lib")
-#include <cstdio>
-#include <cstdlib>
+#include "cGame.h"
 
-
-class cGameTetris
+class cGameTetris : public cGameBase
 {	
 private:
+	SDL_Renderer *R;
+
 	struct cBlockFigure;
 	class cFigureAtlas;
 
@@ -36,11 +33,16 @@ private:
 	int CanStepUp(cBlockFigure *pf);
 	void FigureNext();
 	void OnLose();
-public:
+public:	
+	void Init( SDL_Renderer *r );
+	void Release();
+	void Draw( SDL_Renderer *r );
+	void Keyboard( SDL_Scancode sc=SDL_SCANCODE_UNKNOWN );
+
 	int SetTickStep(int tick=0);
-	void StartNew(SDL_Renderer *r, int Width=0, int Height=0);
+	void StartNew(SDL_Renderer *r=0, int Width=0, int Height=0);
 	void Close();
-	void Draw(SDL_Renderer *r);
+	//void Draw(SDL_Renderer *r);
 	void Resize(int W=0, int H=0);
 	void StepMove(int x=0, int y=0);
 	void PauseSwitch();

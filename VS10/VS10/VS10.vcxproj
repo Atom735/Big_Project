@@ -82,13 +82,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="c2048.cpp" />
     <ClCompile Include="cFT.cpp" />
     <ClCompile Include="cTest.cpp" />
     <ClCompile Include="cTetris.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="c2048.h" />
     <ClInclude Include="cFT.h" />
+    <ClInclude Include="cGame.h" />
     <ClInclude Include="cTest.h" />
     <ClInclude Include="cTetris.h" />
   </ItemGroup>
