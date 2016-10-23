@@ -5,6 +5,7 @@ unsigned int     g_2048_BlockSize = 8;
 unsigned int     g_2048_BlockSizes = 8;
 unsigned int     g_2048_TileSize = 108;
 unsigned int     g_2048_BarSize = 14;
+
 unsigned int     g_2048_Colors[] = {
 0xFAF8EF, // 0-BG
 0xBBADA0, // 1-Grid
@@ -14,62 +15,32 @@ unsigned int     g_2048_Colors[] = {
 0xEEE4DA, // 1-[2]
 0xEDE0C8, // 2-[4]
 0xF2B179, // 3-[8]
+0xF59563, // 4-[16]
+0xF77C61, // 5-[32]
+0xF45E3C, // 6-[64]
+0xEDCE72, // 7-[128]
+0xEDCB61, // 8-[256]
+0xECC750, // 9-[512]
+0xECC440, // 10-[1024]
+0xEDC12C, // 11-[2048]
+0xFF3D3E, // 12-[4096]
+0xFF1E1F, // 13-[8192]
+0xFF1E1F, // 14-[16384]
+0xFF1E1F, // 15-[32768]
+0xFF1E1F, // 16-[32768]
+0xFF1E1F, // 17-[32768]
+0xFF1E1F, // 18-[32768]
+0xFF1E1F, // 19-[32768]
 };
 unsigned int *g_2048_TileColors = g_2048_Colors+4;
 
-struct cG2048_Tile : public ZeroedMemoryAllocator
-{
-	int type;
-	int pos;
-	float x, y, s;
-	cG2048_Tile(int Pos, int Type)
-	{
-		pos=Pos;
-		type=Type;
-	}
-};
+#define G2048_TILE_MERGED 0xF0000000
+#define G2048_TILE_MASK   0x0FFFFFFF
 
-
-// Spawn, Move, Merge
-struct cG2048_Animation : public ZeroedMemoryAllocator
-{
-	int type;
-#define G2048_A_SPAWN 0x01
-	cG2048_Tile *pTile;
-	float x1,y1,s1,x2,y2,s2;
-	int start;
-	int time;
-	cG2048_Animation(int itype, cG2048_Tile *pt, 
-		float X1, float Y1, float S1, 
-		float X2, float Y2, float S2,
-		int istart, int itime)
-	{
-		type=itype;
-		pTile=pt;
-		x1=X1;
-		y1=Y1;
-		s1=S1;
-		x2=X2;
-		y2=Y2;
-		s2=S2;
-		start=istart;
-		time=itime;
-	}
-	void Step(int tick)
-	{
-		if(!pTile) return;
-		float a= float(tick-start)/float(time);
-		if(a<0.f) a=0.f; if(a>1.f) a=1.f;
-		float b=1.f-a;
-
-		pTile->x=x1*b+x2*a;
-		pTile->y=y1*b+y2*a;
-		pTile->s=s1*b+s2*a;
-	}
-	int End(int tick)
-	{return tick-start>time;	}
-};
-
+void cGame2048_Tile::DelAnimation()
+{if(Animation) delete Animation; Animation = 0;}
+cGame2048_Tile::~cGame2048_Tile()
+{DelAnimation();}
 
 void cGame2048::Init( SDL_Renderer *r )
 {
@@ -104,17 +75,38 @@ void cGame2048::Init( SDL_Renderer *r )
     }
     SDL_FreeSurface(surface);
 
-	srand(SDL_GetTicks());
+	srand(tick = SDL_GetTicks());
 
 	x=y=16;
 	W = 4;
 	if(Map) delete[] Map;
 	Map=0;
-	Map = new cG2048_Tile*[W*W];
-	memset(Map,0,W*W*sizeof(cG2048_Tile*));
+	Map = new cGame2048_Tile[W*W];
 
+	History.clear();
+	History.push_back(G2048_HIC_BLOCK_START(HistoryStep));
 	SpawnNew();
 	SpawnNew();
+	History.push_back(G2048_HIC_BLOCK_END(HistoryStep));
+	HistoryStep++;
+	History.push_back(G2048_HIC_BLOCK_START(HistoryStep));
+}
+
+void cGame2048::NewGame()
+{
+	srand(tick = SDL_GetTicks());
+
+	if(Map) delete[] Map;
+	Map=0;
+	Map = new cGame2048_Tile[W*W];
+
+	History.clear();
+	History.push_back(G2048_HIC_BLOCK_START(HistoryStep));
+	SpawnNew();
+	SpawnNew();
+	History.push_back(G2048_HIC_BLOCK_END(HistoryStep));
+	HistoryStep++;
+	History.push_back(G2048_HIC_BLOCK_START(HistoryStep));
 }
 
 void cGame2048::GameOver()
@@ -130,33 +122,20 @@ void cGame2048::SpawnNew()
 	srand(rand());
 	int sz=W*W;
 	for(int i=0;i<W*W;i++)
-		if(Map[i]) sz--;
+		if(Map[i].type>0) sz--;
 	if(sz <= 0) GameOver();
-	if(sz == 1)
-		for(int i=0; i<W*W; i++)
-			if(!Map[i]) {abort();return;}
+
 	int j=rand()%sz+1;
 	for(int i=0; i<W*W; i++)
-		if(!Map[i]) {j--;if(j<=0) {AnimAddSpawn(i, type);return;}}
+		if(Map[i].type==0) {j--;if(j<=0) {
+			// TODO AnimationSpawns
+			Map[i].type = type;
+			Map[i].DelAnimation();
+			Map[i].Animation = new cGame2048_AnimationSpawn(
+				tick, i%W, i/W, Map[i].type);
+			History.push_back(G2048_HIC_TILE_SPAWN(Map[i].type, i));
+			return;}}
 }
-
-void cGame2048::AnimAddSpawn(int pos, int type)
-{
-	cG2048_Tile  *pt=new cG2048_Tile(pos, type);
-	float X=float((g_2048_BarSize+g_2048_TileSize)*(pos%W));
-	float Y=float((g_2048_BarSize+g_2048_TileSize)*(pos/W));
-
-	cG2048_Animation *pa=new cG2048_Animation(G2048_A_SPAWN, pt, 
-		X+float(g_2048_TileSize)*0.5f, Y+float(g_2048_TileSize)*0.5f, 0.f, 
-		X, Y, 1.f,
-		SDL_GetTicks(), 300);
-
-	v.push_back(pt);
-	Av.push_back(pa);
-	Map[pos]=pt;
-	pt=0;pa=0;
-}
-
 
 void cGame2048::Release()	
 {
@@ -165,11 +144,22 @@ void cGame2048::Release()
 	if(TextureBlock) SDL_DestroyTexture(TextureBlock);
 	TextureBlock=0;
 }
-
-void cGame2048::DrawBlock( SDL_Rect rc, int Cid, unsigned int color)
+void cGame2048::DrawTile( float fx, float fy, float s, int type,  unsigned int color)
+{
+	if(type>=0)
+		color=g_2048_TileColors[type];
+	SDL_Rect rc;
+	s*=0.5f;
+	rc.x = (x+g_2048_BarSize)+int(float(g_2048_BarSize+g_2048_TileSize)*fx+float(g_2048_TileSize)*(0.5f-s));
+	rc.y = (y+g_2048_BarSize)+int(float(g_2048_BarSize+g_2048_TileSize)*fy+float(g_2048_TileSize)*(0.5f-s));
+	rc.h = rc.w = int(float(g_2048_TileSize)*(s*2.f));
+	DrawBlock(rc, color);
+}
+	
+void cGame2048::DrawBlock(SDL_Rect rc, unsigned int color)
 {
 	if(rc.w < g_2048_BlockSizes*2) return;
-	if(Cid >= 0) color=g_2048_Colors[Cid];
+
 	SDL_SetTextureColorMod(TextureBlock,(color>>16)&0xff,(color>>8)&0xff,(color)&0xff);
 
 	for(int i=0; i<4; i++)
@@ -219,51 +209,403 @@ void cGame2048::Draw( SDL_Renderer *r )
 	if(r) R=r;
 	r=R;
 
-	int tick = SDL_GetTicks();
-	for(int i=0; i<Av.size(); i++)
-		if(Av[i]) 
-		{
-			Av[i]->Step(tick);
-			if(Av[i]->End(tick))
-			{
-				delete Av[i];
-				Av[i]=0;
-			}
-		}
+	tick = SDL_GetTicks();
 
 	SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
 	SDL_SetTextureBlendMode(TextureBlock, SDL_BLENDMODE_BLEND);
 
 	{
 		unsigned int color=g_2048_Colors[0];
-		SDL_SetRenderDrawColor(r, (color>>16)&0xff,(color>>8)&0xff,(color)&0xff, 0x00);
+		SDL_SetRenderDrawColor(r, 
+			(color>>16)&0xff,
+			(color>>8)&0xff,
+			(color)&0xff, 0x00);
 		SDL_RenderClear(r);
 	}
 	{
 		g_2048_BlockSizes=8;
-		SDL_Rect rcs={x,y,g_2048_TileSize*4+g_2048_BarSize*5,g_2048_TileSize*4+g_2048_BarSize*5};
-		DrawBlock(rcs, 1);
+		int i=g_2048_TileSize*4+g_2048_BarSize*5;
+		SDL_Rect rcs={x,y,i,i};
+		DrawBlock(rcs, g_2048_Colors[1]);
 		g_2048_BlockSizes=4;
 	}
 	for(int iy=0;iy<4;iy++)
 	for(int ix=0;ix<4;ix++)
+		DrawTile(float(ix), float(iy), 1.f);
+
+	for(int i=0;i<W*W;i++)
+		if(Map[i].type>0)
+			if(Map[i].Animation)
+			{
+				if(Map[i].Animation->Draw(this, tick))
+					Map[i].DelAnimation();
+			}
+			else
+				DrawTile(float(i%W), float(i/W), 1.f, Map[i].type);
+}
+
+
+int cGame2048::CanMove(cGame2048_Tile  **Array)
+{
+	if(!Array) return 0;
+	int leftn=0;
+	for(int x=1;x<W;x++)
+		if(Array[x]->type > 0)
+		{
+			if(Array[x]->type==Array[leftn]->type && 
+				!(Array[leftn]->type&G2048_TILE_MERGED))
+				return 1;
+			else
+				leftn++;
+		}
+		else
+		if(Array[x]->type == 0) return 1;
+	return 0;
+}
+int cGame2048::CanMove()
+{
+	cGame2048_Tile  **Ar=0;
+	Ar=new cGame2048_Tile*[W];
+
+	for(int y=0;y<W;y++)
 	{
-		SDL_Rect rcs={x+g_2048_BarSize+(g_2048_BarSize+g_2048_TileSize)*ix,y+g_2048_BarSize+(g_2048_BarSize+g_2048_TileSize)*iy,
-			g_2048_TileSize,g_2048_TileSize};
-		DrawBlock(rcs, -1, g_2048_TileColors[0]);
+		for(int x=0;x<W;x++)
+			Ar[x]=Map+(y*W+x);
+		if(CanMove(Ar)) {delete[] Ar;return 1;}
+
+		for(int x=0;x<W;x++)
+			Ar[x]=Map+(y*W+(W-x-1));
+		if(CanMove(Ar)) {delete[] Ar;return 1;}
+		
+		for(int x=0;x<W;x++)
+			Ar[x]=Map+(x*W+y);
+		if(CanMove(Ar)) {delete[] Ar;return 1;}
+		
+		for(int x=0;x<W;x++)
+			Ar[x]=Map+((W-x-1)*W+y);
+		if(CanMove(Ar)) {delete[] Ar;return 1;}
 	}
 
-	if(v.empty()) return;
-	for(int i=0; i<v.size(); i++)
-	{
-		int sz=int(float(g_2048_TileSize)*v[i]->s);
-		SDL_Rect rcs={
-			x+g_2048_BarSize+int(v[i]->x),
-			y+g_2048_BarSize+int(v[i]->y),
-			sz,sz};
-		DrawBlock(rcs, -1, g_2048_TileColors[v[i]->type]);
-	}
+
+	delete[] Ar;return 0;
 }
+
+
+void cGame2048::EndMove(int plus, int can)
+{
+	for(int i=0;i<W*W;i++)
+	{
+		Map[i].type &= G2048_TILE_MASK;
+		Map[i].oldp = i;
+	}
+	if(plus)
+	{
+		History.push_back(G2048_HIC_POINTS_ADD(plus));
+		Points+=plus;
+	}
+	if(can)
+	{
+		SpawnNew();
+		History.push_back(G2048_HIC_POINTS_ALL(Points));
+		History.push_back(G2048_HIC_BLOCK_END(HistoryStep));
+		HistoryStep++;
+		History.push_back(G2048_HIC_BLOCK_START(HistoryStep));
+	}
+	else
+	if(!CanMove())
+		GameOver();
+}
+
+int cGame2048::GetType(int x1, int y1)
+{return Map[y1*W+x1].type;}
+int cGame2048::rCanMerge(int x1, int y1, int x2, int y2)
+{return GetType(x1,y1)==GetType(x2,y2) && (!(GetType(x1,y1)&G2048_TILE_MERGED));}
+void cGame2048::rMerge(int x1, int y1, int x, int y)
+{
+	int leftn = y1*W+x1;
+	Map[leftn].type=(Map[y*W+x].type+1)|G2048_TILE_MERGED;
+	Map[leftn].oldp=leftn;
+	Map[y*W+x].type=0;
+	// TODO AnimationMerge
+	History.push_back(G2048_HIC_TILE_MOVE(y*W+x, leftn));
+	History.push_back(G2048_HIC_TILE_MERGE(Map[leftn].oldp, y*W+x, leftn));
+	Map[leftn].DelAnimation();
+	Map[leftn].Animation = new cGame2048_AnimationMerge(
+		tick, x1, y1, Map[leftn].oldp%W, Map[leftn].oldp/W, 
+		x, y, Map[leftn].type&G2048_TILE_MASK);
+}
+int cGame2048::rCanMove(int x1, int y1, int x, int y)
+{return Map[y1*W+x1].type==0;}
+void cGame2048::rMove(int x1, int y1, int x, int y)
+{	
+	int leftn = y1*W+x1;
+	Map[leftn].type=Map[y*W+x].type;
+	Map[leftn].oldp=y*W+x;
+	Map[y*W+x].type=0;
+	// TODO AnimationMove
+	Map[leftn].DelAnimation();
+	Map[leftn].Animation = new cGame2048_AnimationMove(
+		tick, x1, y1, x, y, Map[leftn].type);
+	History.push_back(G2048_HIC_TILE_MOVE(y*W+x, leftn));
+}
+
+void cGame2048::MoveLeft()
+{
+	int can=0;
+	int plus=0;
+	for(int y=0;y<W;y++)
+	{
+		int leftn=0;
+		for(int x=1;x<W;x++) if(GetType(x,y) > 0) {
+				if(rCanMerge(leftn,y,x,y))
+				{
+					rMerge(leftn,y,x,y);
+					plus+=int(pow(2.f, GetType(leftn,y)));
+					leftn++;
+					can++;
+				}
+				else
+				if(rCanMove(leftn,y,x,y))
+				{
+					rMove(leftn,y,x,y);
+					can++;
+				}
+				else
+				if(rCanMove(leftn+1,y,x,y))
+				{
+					leftn++;
+					rMove(leftn,y,x,y);
+					can++;
+				}
+				else
+				{
+					leftn++;
+				}
+			}
+	}
+	EndMove(plus, can);
+}
+
+void cGame2048::MoveRight()
+{
+	int can=0;
+	int plus=0;
+	int w=W-1;
+	for(int y=0;y<W;y++)
+	{
+		int leftn=0;
+		for(int x=1;x<W;x++) if(GetType(w-x,y) > 0) {
+				if(rCanMerge(w-leftn,y,w-x,y))
+				{
+					rMerge(w-leftn,y,w-x,y);
+					plus+=int(pow(2.f, GetType(w-leftn,y)));
+					leftn++;
+					can++;
+				}
+				else
+				if(rCanMove(w-leftn,y,w-x,y))
+				{
+					rMove(w-leftn,y,w-x,y);
+					can++;
+				}
+				else
+				if(rCanMove(w-leftn-1,y,w-x,y))
+				{
+					leftn++;
+					rMove(w-leftn,y,w-x,y);
+					can++;
+				}
+				else
+				{
+					leftn++;
+				}
+			}
+	}
+	EndMove(plus, can);
+}
+
+void cGame2048::MoveUp()
+{
+	int can=0;
+	int plus=0;
+	for(int y=0;y<W;y++)
+	{
+		int leftn=0;
+		for(int x=1;x<W;x++) if(GetType(y,x) > 0) {
+				if(rCanMerge(y,leftn,y,x))
+				{
+					rMerge(y,leftn,y,x);
+					plus+=int(pow(2.f, GetType(y,leftn)));
+					leftn++;
+					can++;
+				}
+				else
+				if(rCanMove(y,leftn,y,x))
+				{
+					rMove(y,leftn,y,x);
+					can++;
+				}
+				else
+				if(rCanMove(y,leftn+1,y,x))
+				{
+					leftn++;
+					rMove(y,leftn,y,x);
+					can++;
+				}
+				else
+				{
+					leftn++;
+				}
+			}
+	}
+	EndMove(plus, can);
+}
+void cGame2048::MoveDown()
+{
+	int can=0;
+	int plus=0;
+	int w=W-1;
+	for(int y=0;y<W;y++)
+	{
+		int leftn=0;
+		for(int x=1;x<W;x++) if(GetType(y,w-x) > 0) {
+				if(rCanMerge(y,w-leftn,y,w-x))
+				{
+					rMerge(y,w-leftn,y,w-x);
+					plus+=int(pow(2.f, GetType(y,w-leftn)));
+					leftn++;
+					can++;
+				}
+				else
+				if(rCanMove(y,w-leftn,y,w-x))
+				{
+					rMove(y,w-leftn,y,w-x);
+					can++;
+				}
+				else
+				if(rCanMove(y,w-leftn-1,y,w-x))
+				{
+					leftn++;
+					rMove(y,w-leftn,y,w-x);
+					can++;
+				}
+				else
+				{
+					leftn++;
+				}
+			}
+	}
+	EndMove(plus, can);
+}
+
+
 void cGame2048::Keyboard( SDL_Scancode sc )
 {
+	switch(sc)
+	{
+	case SDL_SCANCODE_LEFT:
+		MoveLeft();
+		break;
+	case SDL_SCANCODE_RIGHT:
+		MoveRight();
+		break;
+	case SDL_SCANCODE_UP:
+		MoveUp();
+		break;
+	case SDL_SCANCODE_DOWN:
+		MoveDown();
+		break;
+	case SDL_SCANCODE_F2:
+		NewGame();
+		break;
+	};
+}
+
+
+cGame2048_AnimationSpawn::cGame2048_AnimationSpawn(int tick,  int ipx, int ipy, int itype)
+{
+	start = tick;
+	len = 130;
+	px = ipx;
+	py = ipy;
+	type = itype;
+}
+int cGame2048_AnimationSpawn::Draw(cGame2048* Game, int tick)
+{
+	if(!Game) return -1;
+	float t=0.f;
+	t=float(tick-start)/float(len);
+	int o=0;
+	if(o=(t>1.f)) t=1.f;
+	Game->DrawTile(float(px), float(py), t, type);
+	return o;
+}
+
+cGame2048_AnimationMove::cGame2048_AnimationMove
+	(int tick, int ipx, int ipy, int ipx0, int ipy0, int itype)
+{
+	start = tick;
+	len = 230;
+	px = float(ipx);
+	py = float(ipy);
+	px0 = float(ipx0);
+	py0 = float(ipy0);
+	type = itype;
+}
+int cGame2048_AnimationMove::Draw(cGame2048* Game, int tick)
+{
+	if(!Game) return -1;
+	float t=0.f;
+	t=float(tick-start)/float(len);
+	int o=0;
+	if(o=(t>1.f)) t=1.f;
+	float t2=1.f-t;
+	Game->DrawTile(px0*t2+px*t, py0*t2+py*t, 1.f, type);
+	return o;
+}
+
+cGame2048_AnimationMerge::cGame2048_AnimationMerge
+	(int tick, int ipx, int ipy, int ipx01, int ipy01,
+	int ipx02, int ipy02, int itype)
+{
+	start = tick;
+	len = 230;
+	px = float(ipx);
+	py = float(ipy);
+	px01 = float(ipx01);
+	py01 = float(ipy01);
+	px02 = float(ipx02);
+	py02 = float(ipy02);
+	type = itype;
+}
+int cGame2048_AnimationMerge::Draw(cGame2048* Game, int tick)
+{
+	if(!Game) return -1;
+	float t=0.f;
+	t=float(tick-start)/float(len);
+	int o=0;
+	if(o=(t>1.4f)) t=1.4f;
+	if(t<=1.f)
+	{
+		float t2=1.f-t;
+		Game->DrawTile(px01*t2+px*t, py01*t2+py*t, 1.f, type-1);
+		Game->DrawTile(px02*t2+px*t, py02*t2+py*t, 1.f, type-1);
+	}
+	else		
+	if(t<=1.2f)
+	{
+		t=(t-1.0f)*5.f;
+		float t2=1.f-t;
+		int r=int(float((g_2048_TileColors[type-1]&0xff0000)>>16)*t2 + float((g_2048_TileColors[type]&0xff0000)>>16)*t);
+		int g=int(float((g_2048_TileColors[type-1]&0xff00)>>8)*t2 + float((g_2048_TileColors[type]&0xff00)>>8)*t);
+		int b=int(float((g_2048_TileColors[type-1]&0xff))*t2 + float((g_2048_TileColors[type]&0xff))*t);
+		if(r>255) r=255;if(g>255) g=255;if(b>255) b=255;
+		Game->DrawTile(px, py, 1.f+t*0.1f, -1, (r<<16)+(g<<8)+b);
+	}
+	else	
+	{
+		float t2=1.f-((t-1.2f)*5.f);
+		Game->DrawTile(px, py, 1.f+t2*0.1f, type);
+	}
+	return o;
 }
