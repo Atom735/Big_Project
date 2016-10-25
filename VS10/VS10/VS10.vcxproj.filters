@@ -27,9 +27,6 @@
     <ClCompile Include="cTetris.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="cTest.cpp">
-      <Filter>Файлы исходного кода</Filter>
-    </ClCompile>
     <ClCompile Include="cFT.cpp">
       <Filter>FreeType</Filter>
     </ClCompile>
@@ -41,9 +38,6 @@
     <ClInclude Include="cTetris.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="cTest.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
     <ClInclude Include="cFT.h">
       <Filter>FreeType</Filter>
     </ClInclude>
@@ -51,6 +45,9 @@
       <Filter>2048</Filter>
     </ClInclude>
     <ClInclude Include="cGame.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="сAllocator.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,7 +2,10 @@
 #define H_C_2048
 
 #include "cGame.h"
+#include "cFT.h"
 #include <vector>
+
+
 
 struct cGame2048_Tile;
 
@@ -37,7 +40,7 @@ struct cGame2048_Tile;
 #define G2048_HI_POINTS_ALL   0xf9
 
 #define G2048_HI_NUM(data)    (data&0x00ffffff)
-#define G2048_HI_TYPE(data)   (data>>24)
+#define G2048_HI_TYPE(data)   ((data>>24)&0xff)
 #define G2048_HI_P0(data)     ((data>>16)&0xff)
 #define G2048_HI_P1(data)     ((data>>8)&0xff)
 #define G2048_HI_P2(data)     (data&0xff)
@@ -86,8 +89,18 @@ private:
 	SDL_Texture  *TextureBlock;
 	SDL_Renderer *R;
 	int Points;
+	int BestPoints;
+
+	int PPluse;
+	int PPluseStart;
+	int PPluseLen;
+
+	int GameOverTick;
+	int GameOverLen;
+
 	int HistoryStep;
 	std::vector<int> History;
+	cFont Font;
 
 	void DrawBlock( SDL_Rect rc, unsigned int color=0);
 	void SpawnNew();
@@ -105,12 +118,18 @@ private:
 	void MoveRight();
 	void MoveUp();
 	void MoveDown();
+	void MoveBack();
 	void NewGame();
+
+	void PointsAdd(int plus);
 
 	// todo
 	void GameOver();
+	int Load();
+	int Save();
 public:
 	void DrawTile( float fx, float fy, float s, int type=0, unsigned int color=0);
+	void DrawTileText(float fx, float fy, float s, int type=0, unsigned int color=0, int alpha=255);
 	virtual void Init( SDL_Renderer *r );
 	virtual void Release();
 	virtual void Draw( SDL_Renderer *r );
@@ -125,6 +144,7 @@ struct cGame2048_Animation
 	int type;
 
 	virtual int Draw(cGame2048* Game, int tick) = 0;
+	virtual int DrawTxt(cGame2048* Game, int tick) = 0;
 };
 
 struct cGame2048_AnimationSpawn 
@@ -133,6 +153,7 @@ struct cGame2048_AnimationSpawn
 	int px, py;
 	cGame2048_AnimationSpawn(int tick, int ipx, int ipy, int itype);
 	virtual int Draw(cGame2048* Game, int tick);
+	virtual int DrawTxt(cGame2048* Game, int tick);
 };
 
 struct cGame2048_AnimationMove 
@@ -141,6 +162,7 @@ struct cGame2048_AnimationMove
 	float px, py, px0, py0;
 	cGame2048_AnimationMove(int tick, int ipx, int ipy, int ipx0, int ipy0, int itype);
 	virtual int Draw(cGame2048* Game, int tick);
+	virtual int DrawTxt(cGame2048* Game, int tick);
 };
 
 struct cGame2048_AnimationMerge 
@@ -149,7 +171,9 @@ struct cGame2048_AnimationMerge
 	float px, py, px01, py01, px02, py02;
 	cGame2048_AnimationMerge(int tick, int ipx, int ipy, int ipx01, int ipy01, int ipx02, int ipy02, int itype);
 	virtual int Draw(cGame2048* Game, int tick);
+	virtual int DrawTxt(cGame2048* Game, int tick);
 };
+
 
 struct cGame2048_Tile 
 	: public ZeroedMemoryAllocator

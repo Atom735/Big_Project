@@ -1,6 +1,7 @@
 #include "cGame.h"
 #include <Windows.h>
 
+#include "cFT.h"
 #include "c2048.h"
 #include "cTetris.h"
 
@@ -18,16 +19,16 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
 		abort();
 	}
-	if (SDL_CreateWindowAndRenderer(1024, 768, SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE, &g_Window, &g_Renderer))
+	if (SDL_CreateWindowAndRenderer(1024, 768, SDL_WINDOW_SHOWN, &g_Window, &g_Renderer))
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError());
 		abort();
     }
 
+	rFT_Init(g_Renderer);
+
 	g_Game = new cGame2048();
 	g_Game->Init(g_Renderer);
-	//g_Tetris.StartNew(g_Renderer);
-	//rTestInit(g_Renderer);
 
     SDL_Event e;
 	while (1) 
@@ -42,44 +43,17 @@ INT APIENTRY WinMain(HINSTANCE hInst,HINSTANCE hPrev,LPSTR cmd,INT showcmd)
 			if(e.type == SDL_KEYDOWN)
 			{
 				g_Game->Keyboard(e.key.keysym.scancode);
-				//rTest(g_Renderer, e.key.keysym.scancode);
-				switch(e.key.keysym.scancode)
-				{
-				case SDL_SCANCODE_LEFT:
-					//g_Tetris.StepMove(-1);
-					break;
-				case SDL_SCANCODE_RIGHT:
-					//g_Tetris.StepMove(1);
-					break;
-				case SDL_SCANCODE_UP:
-					//g_Tetris.StepMove(0,-1);
-					break;
-				case SDL_SCANCODE_DOWN:
-					//g_Tetris.StepMove(0,1);
-					break;
-				case SDL_SCANCODE_F2:
-					//g_Tetris.Close();
-					//g_Tetris.StartNew(g_Renderer);
-					break;
-				case SDL_SCANCODE_P:
-					//g_Tetris.PauseSwitch();
-					break;
-				};
 			}
 		}
-		//g_Tetris.StepMove();
 		SDL_SetRenderDrawColor(g_Renderer, 0x00, 0x00, 0x00, 0x00);
 		SDL_RenderClear(g_Renderer);
 		g_Game->Draw(g_Renderer);
-		//g_Tetris.Draw(g_Renderer);
-		//rTest(g_Renderer);
 		SDL_RenderPresent(g_Renderer);
     }
 GOTO_LEAVE_LOOP:
 	g_Game->Release();
 	delete g_Game;
-	//g_Tetris.Close();
-	//rTestRelease();
+	rFT_Release();
 
 	SDL_DestroyRenderer(g_Renderer);
 	SDL_DestroyWindow(g_Window);

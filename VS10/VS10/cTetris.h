@@ -3,6 +3,8 @@
 
 #include "cGame.h"
 
+#include <cstdio>
+
 class cGameTetris : public cGameBase
 {	
 private:
